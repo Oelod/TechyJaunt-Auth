@@ -1,6 +1,7 @@
 
 const User = require('../model/user.schema');
 const bcrypt = require('bcrypt');
+const JWT = require('jsonwebtoken');
 
 
 
@@ -23,6 +24,12 @@ const signup = async (req, res) => {
       return res.status(409).json({ error: 'User with this email already exists.' });
     }
 
+    // Optional: Check if the email format is valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {                            
+      return res.status(400).json({ error: 'Invalid email format.' });
+    }
+
     // 3. Create the user
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
@@ -34,6 +41,7 @@ const signup = async (req, res) => {
     // 4. Respond (omit password)
     res.status(201).json({
       message: 'User created successfully',
+      
       user: {
         id: user._id,
         name: user.name,
@@ -69,9 +77,22 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    // 4. Success response (you could return a JWT here)
+    const payload = {
+      userId: user._id,
+      email: user.email
+    };
+
+    // 4. Optionally, generate a JWT (not implemented here)
+    const token = await JWT.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION  });
+
+    // 5. Optionally, update the user's token field in the database
+    user.token = token;
+    await user.save();
+
+    // 6. Respond with success
     res.status(200).json({
       message: 'Login successful',
+      token, // 🔑 include JWT here
       user: {
         id: user._id,
         name: user.name,

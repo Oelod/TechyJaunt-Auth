@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { token } = require('morgan');
 
 // Define the User schema
 const userSchema = new mongoose.Schema({
@@ -25,7 +26,23 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
+  token: {
+    type: String,
+    default: null
+  },
+  // Optional fields
+  // profilePicture: {
+  //   type: String,
+  //   default: null
+  // },
+  // bio: {
+  //   type: String,
+  //   default: null
+  // },
+
+  // Timestamps for created and updatedAt fields
+  // These fields will automatically be managed by Mongoose
   createdAt: {
     type: Date,
     default: Date.now
